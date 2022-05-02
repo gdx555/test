@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>layPage快速使用</title>
+    <link rel="stylesheet" th:href="@{/layui/lib/layui-v2.6.3/css/layui.css}" media="all">
+    <script th:src="@{/lib/layui-v2.6.3/layui.js}" charset="utf-8"></script>
+    <link rel="stylesheet" th:href="@{/css/style.css}" media="all">
+    <style type="text/css">
+         img{
+            height: 300px;
+             width: 500px;
+        }
+
+
+    </style>
+</head>
+<body>
+<form class="layui-form" lay-filter="test1">
+
+        <div class="layui-form-item">
+            <label class="layui-form-label ">内容:</label>
+            <div class="layui-input-block" id="con">
+                <textarea name="description" placeholder="请输入内容" class="layui-textarea"></textarea>
+            </div>
+        </div>
+    <!--************这里是上传图片的代码***************-->
+    <!--************这里添加的隐藏的输入框，用来传递images的参数***************-->
+    <input type="hidden" name="url" class="image">
+    <div class="layui-form-item layui-inline">
+
+        <div class="layui-upload">
+            <label class="layui-form-label ">照片:</label>
+            <button type="button" class="layui-btn" id="test1">上传图片</button>
+            <div class="layui-upload-list" id="img">
+                <label class="layui-form-label ">预览区</label>
+                <img class="layui-upload-img" id="demo1">
+                <p id="demoText"></p>
+            </div>
+
+
+
+        </div>
+
+    </div>
+    <!--************上面里是上传图片的代码***************-->
+
+    <br>
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-radius layui-btn-normal" lay-submit lay-filter="btn-submit-filter">提交</button>
+            &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp;&nbsp;
+            <button type="reset" class="layui-btn layui-btn-radius  layui-btn-danger">重置</button>
+        </div>
+    </div>
+    <br>
+</form>
+
+<script type="text/javascript" th:src="@{/js/jquery-1.12.0.min.js}"></script>
+<script type="text/javascript" th:src="@{/js/jquery.flexText.js}"></script>
+
+
+<script>
+
+    layui.use(['form','upload','layer'], function(){
+        var $ = layui.jquery
+            ,upload = layui.upload;
+        var form = layui.form;
+        //普通图片上传
+        var uploadInst = upload.render({
+            elem: '#test1'
+            ,url: '/uploadPic/'
+            ,accept:'url'
+            ,size:50000
+            ,before: function(obj){
+
+                obj.preview(function(index, file, result){
+
+                    $('#demo1').attr('src', result);
+                });
+            }
+            ,done: function(res){
+                //如果上传失败
+                if(res.code > 0){
+                    return layer.msg('上传失败');
+                }
+                //上传成功
+                var demoText = $('#demoText');
+                demoText.css({'margin-left':'110px'});
+                demoText.html('<span style="color: #4cae4c;right: 300px">上传成功</span>');
+
+                var fileupload = $(".image");
+                fileupload.attr("value",res.data.src);
+                console.log(fileupload.attr("value"));
+            }
+            ,error: function(){
+                //演示失败状态，并实现重传
+                var demoText = $('#demoText');
+                demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                demoText.find('.demo-reload').on('click', function(){
+                    uploadInst.upload();
+                });
+            }
+        });
+
+
+        // 表单提交
+        form.on('submit(btn-submit-filter)', function(data){
+            console.log(data)
+            $("#btn-submit").attr("disabled","disabled").addClass("layui-btn-disabled");
+            // 异步请求提交数据
+            var url = "/upload";
+            $.post(url,data.field,function (response) {
+                if(response.code == 0){
+                    // 成功提示
+                    layer.msg(response.description, {
+                        icon: 6,
+                        time: 2000 //2秒关闭（如果不配置，默认是3秒）
+                    }, function(){
+
+                        window.location = 'feedbackSuccess';
+                    });
+
+                }else{
+                    $("#btn-submit").removeAttr("disabled","disabled").removeClass("layui-btn-disabled");
+                    // 失败则提示错误信息，窗口不关闭
+                    layer.msg("新增失败，请联系管理员", {
+                        icon: 2,
+                        anim: 6
+                    });
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+    });
+</script>
+
+
+
+
+</body>
+</html>

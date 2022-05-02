@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>Layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" th:href="@{/layui/lib/layui-v2.6.3/css/layui.css}" media="all">
+</head>
+<body>
+
+
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 50px; text-align: center">
+    <legend>排行榜</legend>
+</fieldset>
+<br>
+<br>
+
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;
+<span>完成量(单)</span>
+</div>
+<br>
+<br>
+        <div style="width: 70%;margin: 0 auto;" >
+
+            <div >
+                <div style="display: flex;justify-content: space-between">
+                <span th:text="${rank.userName}"></span>
+                <span th:text="${rank.amount}"></span>
+                </div>
+                <div class="layui-progress layui-progress-big" lay-filter="first">
+                    <div class="layui-progress-bar layui-bg-red"></div>
+                </div>
+
+            </div>
+
+        <br>
+            <div style="display: flex;justify-content: space-between">
+            <span th:text="${rank.children.userName}"></span>
+            <span th:text="${rank.children.amount}"></span>
+            </div>
+            <div class="layui-progress layui-progress-big" lay-filter="second" >
+                <div class="layui-progress-bar layui-bg-orange"></div>
+            </div>
+
+        <br>
+            <div style="display: flex;justify-content: space-between">
+            <span th:text="${rank.children.children.userName}"></span>
+
+            <span th:text="${rank.children.children.amount}"></span>
+            </div>
+
+            <div class="layui-progress layui-progress-big" lay-filter="third">
+                <div class="layui-progress-bar layui-bg-blue" ></div>
+            </div>
+
+        <br>
+            <div style="display: flex;justify-content: space-between">
+                <span th:text="${rank.children.children.children.userName}"></span>
+                <span th:text="${rank.children.children.children.amount}"></span>
+            </div>
+
+
+            <div class="layui-progress layui-progress-big" lay-filter="fourth">
+                <div class="layui-progress-bar layui-bg-green" ></div>
+            </div>
+
+        <br>
+           <div style="display: flex;justify-content: space-between">
+               <span th:text="${rank.children.children.children.children.userName}" style="float: left;"></span>
+               <span th:text="${rank.children.children.children.children.amount}" style="float: right;"></span>
+           </div>
+            <div class="layui-progress layui-progress-big" lay-filter="fifth">
+                <div class="layui-progress-bar layui-bg-cyan"></div>
+            </div>
+
+<!--        <br>-->
+<!--            <span th:text="${rank.children.children.children.children.userName}"></span>-->
+<!--            <div class="layui-progress layui-progress-big" lay-filter="fifth">-->
+<!--                <div class="layui-progress-bar layui-bg-orange"></div>-->
+<!--            </div>-->
+
+<!--            <br>-->
+<!--            <span th:text="${rank.children.children.children.children.userName}"></span>-->
+<!--            <div class="layui-progress layui-progress-big" lay-filter="fifth">-->
+<!--                <div class="layui-progress-bar layui-bg-orange"></div>-->
+<!--            </div>-->
+
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+<!-- 示例-970 -->
+
+
+
+
+<script th:src="@{/lib/jquery-3.4.1/jquery-3.4.1.min.js}" charset="utf-8"></script>
+<script th:src="@{/lib/layui-v2.6.3/layui.js}" charset="utf-8"></script>
+<script th:src="@{/lib/jq-module/jquery.particleground.min.js}" charset="utf-8"></script>
+<script>
+    var result;
+    layui.use('element', function(){
+        var element = layui.element; //Tab的切换功能，切换事件监听等，需要依赖element模块
+
+        $.ajax({
+            type:"get",
+            url:"/order/listRank",
+            async:false,
+            success: function(data) {
+                result=data.data;
+            }
+        });
+        console.log(result)
+        var first=result.persent;
+        var second=result.children.persent;
+        var third=result.children.children.persent;
+        var fourth=result.children.children.children.persent;
+        var fifth=result.children.children.children.children.persent;
+
+        element.progress('first',first*100+'%');
+        element.progress('second',second*100+'%');
+        element.progress('third',third*100+'%');
+        element.progress('fourth',fourth*100+'%');
+        element.progress('fifth',fifth*100+'%');
+
+
+    });
+</script>
+
+</body>
+</html>

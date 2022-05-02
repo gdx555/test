@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>确认完成</title>
+    <link rel="stylesheet" th:href="@{/lib/layui-v2.6.3/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/css/layuimini.css?v=2.0.4.2}" media="all">
+    <link rel="stylesheet" th:href="@{/css/themes/default.css}" media="all">
+    <link rel="stylesheet" th:href="@{/lib/font-awesome-4.7.0/css/font-awesome.min.css}" media="all">
+    <style>
+        .div-content{
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .table-search-fieldset {
+            margin: 0;
+            border: 1px solid #e6e6e6;
+            padding: 10px 20px 5px 20px;
+            color: #6b6b6b;
+        }
+    </style>
+</head>
+<body>
+
+<table lay-filter="demo">
+    <thead>
+    <tr>
+        <th lay-data="{field:'username', width:300}">订单编号</th>
+        <th lay-data="{field:'experience', width:200, sort:true}">送达时间</th>
+        <th lay-data="{field:'orderName', width:200}">外卖名称</th>
+        <th lay-data="{field:'userName', width:200}">接单者姓名</th>
+        <th lay-data="{field:'operation'}">操作</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="d,dataStat:${OrderFinish}">
+        <div class="content">
+            <td th:text="${d.orderId}" class="orderId"></td>
+            <span th:text="${d.userId}" hidden="hidden"></span>
+            <td th:text="${d.timeArrival}"></td>
+            <td th:text="${d.orderName}"></td>
+            <td th:text="${d.userName}"></td>
+        </div>
+        <div class="btn">
+            <td>
+<button type="button" class="layui-btn layui-btn-sm" onclick="confirmClick(this)" th:attr="orderId=${d.orderId},userId=${d.userId},userName=${d.userName}">确认</button>
+            </td>
+        </div>
+    </tr>
+
+    </tbody>
+</table>
+
+</body>
+<script th:src="@{/lib/jquery-3.4.1/jquery-3.4.1.min.js}" charset="utf-8"></script>
+<script th:src="@{/lib/layui-v2.6.3/layui.js}" charset="utf-8"></script>
+<script th:src="@{/js/lay-config.js?v=2.0.0}" charset="utf-8"></script>
+<script type="text/javascript">
+    function confirmClick(that){
+        // var orderId = e.getAttribute('data');
+        var orderId =$(that).attr('orderId');
+        var userId =$(that).attr('userId');
+        var userName=$(that).attr('userName');
+        console.log(userId)
+        console.log(orderId)
+
+        layer.confirm('您确认该订单已由'+userName+'完成?',{icon: 3, title:'完成确认'}, function(index){
+            $.ajax({
+                url:ctxPath + "order/orderDone/" + orderId+"/"+userId,
+                type:'DELETE',
+                success: function (response) {
+                    if (response.code==0){
+                        layer.msg(response.description, {icon: 1});
+                        location.reload();
+                        layer.close(index);
+
+                    }else {
+                        layer.alert(response.message, {icon: 2,anim:6 });
+                    }
+                }
+
+        });
+
+                    });
+    }
+
+</script>
+
+<script th:inline="javascript">
+    var ctxPath = [[@{/}]];
+        layui.use(['layer', 'form', 'laydate','table'], function() {
+            var table = layui.table;
+
+            //转换静态表格
+            table.init('demo', {
+                height: 315 //设置高度
+                , limit: 10 //注意：请务必确保 limit 参数（默认：10）是与你服务端限定的数据条数一致
+                //支持所有基础参数
+            });
+
+        });
+
+</script>
+</html>

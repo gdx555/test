@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>中奖名单</title>
+
+    <link rel="stylesheet" th:href="@{/lib/layui-v2.6.3/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/css/layuimini.css?v=2.0.4.2}" media="all">
+    <link rel="stylesheet" th:href="@{/css/themes/default.css}" media="all">
+    <link rel="stylesheet" th:href="@{/lib/font-awesome-4.7.0/css/font-awesome.min.css}" media="all">
+    <style>
+        .div-content{
+            background-color: white;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .table-search-fieldset {
+            margin: 0;
+            border: 1px solid #e6e6e6;
+            padding: 10px 20px 5px 20px;
+            color: #6b6b6b;
+        }
+    </style>
+</head>
+<body>
+<div class="div-content">
+    <form class="layui-form layui-form-pane" id="form-search">
+        <fieldset class="table-search-fieldset">
+            <legend>搜索条件</legend>
+            <div class="layui-form-item">
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">中奖者姓名</label>
+                    <div class="layui-input-inline" style="width: 250px;">
+                        <input type="text" name="userName" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <label class="layui-form-label">中奖时间段</label>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="startTime" placeholder="起始时间" autocomplete="off" class="layui-input" id="date1">
+                    </div>
+                    <div class="layui-form-mid">-</div>
+                    <div class="layui-input-inline" style="width: 150px;">
+                        <input type="text" name="endTime" placeholder="结束时间" autocomplete="off" class="layui-input" id="date2">
+                    </div>
+                </div>
+
+                <div class="layui-inline">
+                    <button id="btn-search" lay-submit lay-filter="btn-search-filter" type="button" class="layui-btn layui-btn-radius layui-btn-normal">
+                        <i class="layui-icon layui-icon-search"></i>
+                        搜索
+                    </button>
+                    <button id="btn-reset"  type="reset" class="layui-btn layui-btn-radius layui-btn-primary">
+                        <i class="layui-icon layui-icon-fonts-clear"></i>
+                        清空条件
+                    </button>
+                </div>
+
+            </div>
+        </fieldset>
+    </form>
+
+    <table id="table-lottery" lay-filter="table-lottery-filter"></table>
+</div>
+
+<script type="text/html" id="convertReward">
+    {{#
+    if(d.reward == 1){
+    return '一等奖';
+    }else if(d.reward == 2){
+    return '二等奖';
+    }else if(d.reward == 3){
+    return '三等奖';
+    }else if(d.reward == 4){
+    return '四等奖';
+    }else if(d.reward == 0){
+    return '参与奖';
+    }
+    }}
+</script>
+<script th:src="@{/lib/jquery-3.4.1/jquery-3.4.1.min.js}" charset="utf-8"></script>
+<script th:src="@{/lib/layui-v2.6.3/layui.js}" charset="utf-8"></script>
+<script th:src="@{/js/lay-config.js?v=2.0.0}" charset="utf-8"></script>
+
+
+<script type="text/html" id="col-lottery-toolbar">
+    <a class="layui-btn layui-btn-xs" lay-event="confirm">确认兑奖</a>
+</script>
+<script th:inline="javascript">
+
+    function refreshTable(){
+        $("#btn-reset").click();
+        $("#btn-search").click();
+    }
+
+    var ctxPath = [[@{/}]];
+
+    layui.use(['layer', 'form', 'laydate','table'], function(){
+        var laydate = layui.laydate;
+        var table = layui.table;
+        var layer = layui.layer;
+        var form = layui.form;
+
+
+
+        // 监听表单提交
+        form.on('submit(btn-search-filter)', function(data){
+            console.log(data.field) //当前容器的全部表单字段，名值对形式：{name: value}
+            // 刷新表格
+            table.reload('table-lottery', {
+                where: { //设定异步数据接口的额外参数，任意设
+                    userName: data.field.userName,
+                    startTime: data.field.startTime,
+                    endTime: data.field.endTime
+                }
+                ,page: {
+                    curr: 1 //重新从第 1 页开始
+                }
+            });
+            return false; //阻止表单跳转。如果需要表单跳转，去掉这段即可。
+        });
+
+        // 监听操作列
+        table.on('tool(table-lottery-filter)', function(obj){ //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            if(layEvent == 'confirm'){
+                layer.confirm('您确认编号为：'+data.id + "  奖励已兑换？", {icon: 3, title:'兑换确认'}, function(index){
+                    // 异步请求删除数据、结果提示、刷新表格
+                    var url = ctxPath + "deleteLottery/" + data.id;
+                    var params = {
+                        _method:"DELETE"
+                    }
+                    $.post(url,params,function (response) {
+                        if(response.code == 0){
+                            layer.msg(response.description, {icon: 1});
+                            refreshTable();
+                        }else{
+                            layer.alert(response.description, {icon: 2,anim:6 });
+                        }
+
+                    });
+
+                    layer.close(index);
+                });
+            }
+        });
+
+
+        table.render({
+            elem: '#table-lottery'
+            ,url: ctxPath + 'listLottery'
+            ,page: true
+            ,toolbar:"#table-lottery-toolbar"
+            ,limits: [5,10,30,50,100]
+            ,cols: [ [
+                {field: 'id', title: '中奖编号', width:200}
+                ,{field: 'date', title: '中奖时间', width: 300 ,sort:true}
+                ,{field: 'userName', title: '中奖者', width:230}
+                ,{field: 'reward', title: '中奖类型', width: 235,templet: '#convertReward'}
+                ,{title:'操作',toolbar: '#col-lottery-toolbar'}
+            ] ]
+        });
+
+
+        //时间选择器
+        laydate.render({
+            elem: '#date1'
+            ,type: 'datetime'
+        });
+
+        //时间选择器
+        laydate.render({
+            elem: '#date2'
+            ,type: 'datetime'
+        });
+    });
+
+
+</script>
+</body>
+</html>
